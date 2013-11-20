@@ -1,0 +1,3 @@
+[submodule "irc"]
+	path = irc
+	url = git://github.com/jaraco/irc.git
