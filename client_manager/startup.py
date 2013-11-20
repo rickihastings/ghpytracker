@@ -3,6 +3,9 @@ import os, threading, signal, httplib, json
 from django.core.exceptions import MiddlewareNotUsed
 from django.conf import settings
 from client_manager import ircbot
+
+from github3 import login
+from github3 import repos as ghrepos
 # import required modules
 
 """
@@ -12,6 +15,7 @@ Handles the client manager class, starting up, config validation and the startup
 """
 class Startup(object):
 	bots = {}
+	gh = {}
 	failed = False
 
 	def __init__(self):
@@ -57,8 +61,6 @@ class Startup(object):
 				break
 			if not validate_setting(key, repo, 'REPOS', 'repo', ''):
 				break
-			if not validate_setting(key, repo, 'REPOS', 'shakey', ''):
-				break
 			if not validate_setting(key, repo, 'REPOS', 'broadcast', 'type(dicti[name]) is not list'):
 				break
 			if not validate_setting(key, repo, 'REPOS', 'events', 'type(dicti[name]) is not list'):
@@ -70,10 +72,16 @@ class Startup(object):
 		return not self.failed
 
 	def proceed(self, repos, clients):
-		for repo in repos:
-			self.setup_hook(repo)
-
 		key = 0
+		for repo in repos:
+			self.authenticate(repos[key]['login'][0], repos[key]['login'][1])
+			# authenticate
+			
+			self.setup_hook(repos[key])
+			key = key + 1
+		# setup github hooks
+
+		"""key = 0
 		for client in clients:
 			self.bots[key] = {}
 			self.bots[key]['info'] = client
@@ -82,17 +90,25 @@ class Startup(object):
 			self.fork(self.bots, key)
 
 			key = key + 1
-		# loop through the clients and set them up
+		# loop through the clients and set them up"""
+
+	def authenticate(self, user, password):
+		self.gh = login(user, password)
 
 	def setup_hook(self, repo):
-		conn = httplib.HTTPSConnection('api.github.com')
+		url = repo['url']
+		split = repo['repo'].split('/')
+		owner = split[0]
+		name = split[1]
+		event_hooks = []
 
-		for event in repo['events']:
-			data = 'hub.mode=subscribe&hub.topic=https://api.github.com/%s/events/%s&hub.callback=%s' % (repo['repo'], event[0], event[1])
-			# url and POST data
-			
-			conn.request('POST', '/hub')
-			
+		Repository = self.gh.repository(owner, name)
+		# get the repository info
+
+		print Repository.create_hook('web', {
+			'url': url,
+			'content_type': 'json'
+		}, repo['events'], True)
 
 	def fork(self, bots, key):
 		bots[key]['client'] = ircbot.IRCBot(bots[key]['info'])
