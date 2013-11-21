@@ -24,7 +24,7 @@ class Startup(object):
 		# if validate passes then proceed
 
 	def validate_config(self, repos, clients):
-		if (os.environ.get('GITHUB_USER') == None or os.environ.get('GITHUB_PASS') == None):
+		if os.environ.get('GITHUB_USER') == None or os.environ.get('GITHUB_PASS') == None:
 			print 'the enrivoment variables GITHUB_USER and GITHUB_PASS are not set'
 			os.kill(os.getpid(), signal.SIGTERM)
 		# we need a github username and password, this needs to be in the enviroment vars, not settings
@@ -75,25 +75,25 @@ class Startup(object):
 		return not self.failed
 
 	def proceed(self, repos, clients):
+		self.authenticate(os.environ['GITHUB_USER'], os.environ['GITHUB_PASS'])
+		# authenticate
+
 		key = 0
 		for repo in repos:
-			self.authenticate(os.environ['GITHUB_USER'], os.environ['GITHUB_PASS'])
-			# authenticate
-			
 			self.setup_hook(repos[key])
 			key = key + 1
 		# setup github hooks
 
-		"""key = 0
+		key = 0
 		for client in clients:
 			self.bots[key] = {}
 			self.bots[key]['info'] = client
 			#self.bots[key]['thread'] = threading.Thread(target=self.fork, args=(self.bots, key,))
 			#self.bots[key]['thread'].start()
-			self.fork(self.bots, key)
+			#self.fork(self.bots, key)
 
 			key = key + 1
-		# loop through the clients and set them up"""
+		# loop through the clients and set them up
 
 	def authenticate(self, user, password):
 		self.gh = login(user, password)
@@ -107,6 +107,11 @@ class Startup(object):
 
 		Repository = self.gh.repository(owner, name)
 		# get the repository info
+
+		for hook in Repository.iter_hooks():
+			if hook.name == 'web':
+				hook.delete()
+		# remove hooks otherwise we get validation error if we try to readd them
 
 		print Repository.create_hook('web', {
 			'url': url,

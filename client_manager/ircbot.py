@@ -24,17 +24,5 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 		for channel in self.chans:
 			c.join(channel['channel'], channel['key'])
 
-	def on_privmsg(self, c, e):
-		self.do_command(e, e.arguments()[0])
-
-	def do_command(self, e, cmd):
-		print cmd
-		nick = e.source.nick
-		c = self.connection
-
-		if cmd == "disconnect":
-			self.disconnect()
-		elif cmd == "die":
-			self.die()
-		else:
-			c.notice(nick, "Not understood: " + cmd)
+	def on_pubmsg(self, c, e):
+		print c, e

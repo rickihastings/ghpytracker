@@ -166,7 +166,7 @@ CLIENTS = [
         'realname': 'Github Tracker',       # realname to use (gecos)
         'channels': [                       # channels, in the format {'channel': '#somechan', 'key': 'hiddenkey'} (blank for no key)
             {
-                'channel': '#shittalk',
+                'channel': '#peng',
                 'key': ''
             }
         ]
@@ -180,7 +180,7 @@ REPOS = [
         'repo': 'rickihastings/ghpytracker',
         'url': 'http://requestb.in/uue7mkuu',
         'broadcast': [
-            'irc.verxe.net:6667/#shittalk'
+            'irc.verxe.net:6667/#peng'
         ],
         'events': [
             'push',
