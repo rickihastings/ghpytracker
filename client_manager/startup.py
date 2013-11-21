@@ -24,6 +24,11 @@ class Startup(object):
 		# if validate passes then proceed
 
 	def validate_config(self, repos, clients):
+		if (os.environ.get('GITHUB_USER') == None or os.environ.get('GITHUB_PASS') == None):
+			print 'the enrivoment variables GITHUB_USER and GITHUB_PASS are not set'
+			os.kill(os.getpid(), signal.SIGTERM)
+		# we need a github username and password, this needs to be in the enviroment vars, not settings
+
 		if (type(clients) is not list or len(clients) == 0) or (type(repos) is not list or len(repos) == 0):
 			print 'settings is not configured. Server will not boot, please configure it first!'
 			os.kill(os.getpid(), signal.SIGTERM)
@@ -74,7 +79,7 @@ class Startup(object):
 	def proceed(self, repos, clients):
 		key = 0
 		for repo in repos:
-			self.authenticate(repos[key]['login'][0], repos[key]['login'][1])
+			self.authenticate(os.environ['GITHUB_USER'], os.environ['GITHUB_PASS'])
 			# authenticate
 			
 			self.setup_hook(repos[key])
