@@ -43,33 +43,27 @@ class Startup(object):
 			else:
 				return True
 
-		key = 0
-		for client in clients:
-			if not validate_setting(key, client, 'CLIENTS', 'server', ''):
+		for key in clients:
+			if not validate_setting(key, key, 'CLIENTS', 'server', ''):
 				break
-			if not validate_setting(key, client, 'CLIENTS', 'port', 'type(dicti[name]) is not int'):
+			if not validate_setting(key, key, 'CLIENTS', 'port', 'type(dicti[name]) is not int'):
 				break
-			if not validate_setting(key, client, 'CLIENTS', 'nickname', ''):
+			if not validate_setting(key, key, 'CLIENTS', 'nickname', ''):
 				break
-			if not validate_setting(key, client, 'CLIENTS', 'username', ''):
+			if not validate_setting(key, key, 'CLIENTS', 'username', ''):
 				break
-			if not validate_setting(key, client, 'CLIENTS', 'realname', ''):
+			if not validate_setting(key, key, 'CLIENTS', 'realname', ''):
 				break
 			# basic validation, check each individual setting with validate_setting and handle accordingly.
-
-			key = key + 1
 		# loop through the clients and validate them
 
-		key = 0
-		for repo in repos:
-			if not validate_setting(key, repo, 'REPOS', 'repo', ''):
+		for key in repos:
+			if not validate_setting(key, key, 'REPOS', 'repo', ''):
 				break
-			if not validate_setting(key, repo, 'REPOS', 'broadcast', 'type(dicti[name]) is not list'):
+			if not validate_setting(key, key, 'REPOS', 'broadcast', 'type(dicti[name]) is not list'):
 				break
-			if not validate_setting(key, repo, 'REPOS', 'events', 'type(dicti[name]) is not list'):
+			if not validate_setting(key, key, 'REPOS', 'events', 'type(dicti[name]) is not list'):
 				break
-
-			key = key + 1
 		# setup github pubsubdubhub hooks, or whatever the hell it's called.
 
 		return not self.failed
@@ -78,20 +72,16 @@ class Startup(object):
 		self.authenticate(os.environ['GITHUB_USER'], os.environ['GITHUB_PASS'])
 		# authenticate
 
-		key = 0
 		for repo in repos:
-			self.setup_hook(repos[key])
-			key = key + 1
+			self.setup_hook(repo)
 		# setup github hooks
 
 		key = 0
 		for client in clients:
 			self.bots[key] = {}
 			self.bots[key]['info'] = client
-			#self.bots[key]['thread'] = threading.Thread(target=self.fork, args=(self.bots, key,))
-			#self.bots[key]['thread'].start()
-			#self.fork(self.bots, key)
-
+			self.bots[key]['thread'] = threading.Thread(target=self.fork, args=(self.bots, key))
+			self.bots[key]['thread'].start()
 			key = key + 1
 		# loop through the clients and set them up
 
@@ -113,7 +103,7 @@ class Startup(object):
 				hook.delete()
 		# remove hooks otherwise we get validation error if we try to readd them
 
-		print Repository.create_hook('web', {
+		Repository.create_hook('web', {
 			'url': url,
 			'content_type': 'json'
 		}, repo['events'], True)

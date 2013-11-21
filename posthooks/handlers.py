@@ -1,3 +1,5 @@
+import json
+from django.conf import settings
 from client_manager import startup
 
 message_reponses = {
@@ -13,61 +15,86 @@ message_reponses = {
 # Here we handle and parse JSON requests from github
 #
 def incoming(hook_type, post):
-	if hook_type == 'push':
-		repo 		= post['repository']['owner']['name'] + '/' + post['repository']['name']
-		# get the repository
+	try:
+		post = json.loads(post)
 
-		for commit in post['commits']:
-			commit_id	= commit['id'][:7]
-			author		= commit['author']['username']
-			message		= commit['message']
-			url			= commit['url']
+		if hook_type == 'push':
+			repo 		= post['repository']['owner']['name'] + '/' + post['repository']['name']
+			# get the repository
 
-			resp(message_reponses['commit'] % (commit_id, author, repo, message, url))
-		# loop through the commits
+			for commit in post['commits']:
+				commit_id	= commit['id'][:7]
+				author		= commit['author']['username']
+				message		= commit['message']
+				url			= commit['url']
 
-	elif hook_type == 'commit_comment':
-		user		= post['comment']['user']['login']
-		commit_id	= post['comment']['commit_id'][:7]
-		repo 		= post['repository']['full_name']
-		url			= post['comment']['html_url']
-		# get the repository
+				resp(repo, message_reponses['commit'] % (commit_id, author, repo, message, url))
+			# loop through the commits
 
-		resp(message_reponses['commit_comment'] % (user, commit_id, repo, url))
+		elif hook_type == 'commit_comment':
+			user		= post['comment']['user']['login']
+			commit_id	= post['comment']['commit_id'][:7]
+			repo 		= post['repository']['full_name']
+			url			= post['comment']['html_url']
+			# get the repository
 
-	elif hook_type == 'issues':
-		user		= post['issue']['user']['login']
-		action		= post['action']
-		number		= post['issue']['number']
-		repo 		= post['repository']['full_name']
-		title		= post['issue']['title']
-		url			= post['issue']['html_url']
-		# get the repository
+			resp(repo, message_reponses['commit_comment'] % (user, commit_id, repo, url))
 
-		resp(message_reponses['issue'] % (user, action, number, repo, title, url))
+		elif hook_type == 'issues':
+			user		= post['issue']['user']['login']
+			action		= post['action']
+			number		= post['issue']['number']
+			repo 		= post['repository']['full_name']
+			title		= post['issue']['title']
+			url			= post['issue']['html_url']
+			# get the repository
 
-	elif hook_type == 'issue_comment':
-		user		= post['comment']['user']['login']
-		number		= post['issue']['number']
-		title		= post['issue']['title']
-		repo 		= post['repository']['full_name']
-		url			= post['comment']['html_url']
-		# get the repository
+			resp(repo, message_reponses['issue'] % (user, action, number, repo, title, url))
 
-		resp(message_reponses['issue_comment'] % (user, number, title, repo, url))
+		elif hook_type == 'issue_comment':
+			user		= post['comment']['user']['login']
+			number		= post['issue']['number']
+			title		= post['issue']['title']
+			repo 		= post['repository']['full_name']
+			url			= post['comment']['html_url']
+			# get the repository
 
-	elif hook_type == 'pull_request':
-		user		= post['pull_request']['user']['login']
-		action		= 'merged' if post['action'] == 'synchronize' else post['action'] 
-		number		= post['pull_request']['number']
-		head 		= post['pull_request']['head']['label']
-		base 		= post['pull_request']['base']['label']
-		url			= post['pull_request']['html_url']
-		# get the repository
+			resp(repo, message_reponses['issue_comment'] % (user, number, title, repo, url))
 
-		resp(message_reponses['pull_request'] % (user, action, number, base, head, url))
+		elif hook_type == 'pull_request':
+			repo 		= post['pull_request']['base']['repo']['full_name']
+			user		= post['pull_request']['user']['login']
+			action		= 'merged' if post['action'] == 'synchronize' else post['action'] 
+			number		= post['pull_request']['number']
+			head 		= post['pull_request']['head']['label']
+			base 		= post['pull_request']['base']['label']
+			url			= post['pull_request']['html_url']
+			# get the repository
 
-def resp(text):
-	print text
-	#print startup.Startup.bots
-	# we have a response, send it to a channel based on the repo
+			resp(repo, message_reponses['pull_request'] % (user, action, number, base, head, url))
+	except ValueError as e:
+		return False
+
+	return True
+
+def resp(repo, text):
+	channels = []
+
+	for repository in settings.REPOS:
+		if repo == repository['repo']:
+			channels = repository['broadcast']
+	# find the repository object first
+
+	for channel in channels:
+		split = channel.split('/')
+		network = split[0]
+		channel = split[1]
+
+		for key in startup.Startup.bots:
+			bot = startup.Startup.bots[key]
+			bot_network = bot['info']['server'] + ':' + str(bot['info']['port'])
+			
+			if bot_network == network:
+				bot['client'].connection.privmsg(channel, text)
+			# here we go, lets just send it away now, regardless of whether the channel exists
+	# loop through the channels and grab a network relating to it
