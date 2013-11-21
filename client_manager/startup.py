@@ -62,8 +62,6 @@ class Startup(object):
 
 		key = 0
 		for repo in repos:
-			if not validate_setting(key, repo, 'REPOS', 'login', 'type(dicti[name]) is not tuple'):
-				break
 			if not validate_setting(key, repo, 'REPOS', 'repo', ''):
 				break
 			if not validate_setting(key, repo, 'REPOS', 'broadcast', 'type(dicti[name]) is not list'):
