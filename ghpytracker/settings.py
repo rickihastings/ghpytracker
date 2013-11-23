@@ -166,7 +166,7 @@ CLIENTS = [
         'realname': 'Github Tracker',       # realname to use (gecos)
         'channels': [                       # channels, in the format {'channel': '#somechan', 'key': 'hiddenkey'} (blank for no key)
             {
-                'channel': '#peng',
+                'channel': '#ircanywhere-test',
                 'key': ''
             }
         ]
@@ -177,10 +177,10 @@ CLIENTS = [
 # individual github logins for each repo
 REPOS = [
     {
-        'repo': 'rickihastings/ghpytracker',
-        'url': 'http://requestb.in/uue7mkuu',
+        'repo': 'ircanywhere/ircanywhere',
+        'url': 'http://requestb.in/1807gsx1',
         'broadcast': [
-            'irc.verxe.net:6667/#peng'
+            'irc.verxe.net:6667 #ircanywhere-test'
         ],
         'events': [
             'push',

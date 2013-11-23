@@ -46,8 +46,9 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 				if type(commit) is github3.repos.commit.RepoCommit:
 					url = commit.html_url
 					commit = commit.commit
+					message = ' '.join(commit.message.split())[:50]
 
-					c.privmsg(chan, "Commit %s: %s (%s)" % (commit_sha, commit.message, url))
+					c.privmsg(chan, "Commit %s: %s... (%s)" % (commit_sha, message, url))
 		# we've found a commit number match
 
 		regex = re.compile(r"([#?])([0-9]+)\b")
@@ -63,5 +64,6 @@ class IRCBot(irc.bot.SingleServerIRCBot):
 				# get issue
 
 				if type(issue) is github3.issues.issue.Issue:
-					c.privmsg(chan, "Issue #%s: %s (%s)" % (search.group(2), issue.title, issue.html_url))
+					title = ' '.join(issue.title.split())[:50]
+					c.privmsg(chan, "Issue #%s: %s... (%s)" % (search.group(2), title, issue.html_url))
 		# we found an issue number match

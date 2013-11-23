@@ -20,7 +20,12 @@ response_objects = {
 #
 @csrf_exempt
 def payload(request):
-	response = handlers.incoming(request.META['HTTP_X_GITHUB_EVENT'], request.body)
+	if 'payload' not in request.POST:
+		body = request.body
+	else:
+		body = request.POST['payload']
+
+	response = handlers.incoming(request.META['HTTP_X_GITHUB_EVENT'], body)
 	# handle request elsewhere to keep the view clean
 
 	if response == False:

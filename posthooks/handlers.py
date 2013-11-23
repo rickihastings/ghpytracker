@@ -3,10 +3,10 @@ from django.conf import settings
 from client_manager import startup
 
 message_reponses = {
-	'commit':			"%s by %s in %s: %s (%s)",
+	'commit':			"%s by %s in %s: %s... (%s)",
 	'commit_comment':	"%s has commented on %s in %s (%s)",
-	'issue':			"%s has %s #%s in %s: %s (%s)",
-	'issue_comment':	"%s has commented on #%s: %s in %s (%s)",
+	'issue':			"%s has %s #%s in %s: %s... (%s)",
+	'issue_comment':	"%s has commented on #%s: %s... in %s (%s)",
 	'pull_request':		"%s has %s pull request #%s to merge %s into %s (%s)"
 }
 
@@ -25,7 +25,7 @@ def incoming(hook_type, post):
 			for commit in post['commits']:
 				commit_id	= commit['id'][:7]
 				author		= commit['author']['username']
-				message		= commit['message']
+				message		= ' '.join(commit['message'].split())[:50]
 				url			= commit['url']
 
 				resp(repo, message_reponses['commit'] % (commit_id, author, repo, message, url))
@@ -45,7 +45,7 @@ def incoming(hook_type, post):
 			action		= post['action']
 			number		= post['issue']['number']
 			repo 		= post['repository']['full_name']
-			title		= post['issue']['title']
+			title		= ' '.join(post['issue']['title'].split())[:50]
 			url			= post['issue']['html_url']
 			# get the repository
 
@@ -54,7 +54,7 @@ def incoming(hook_type, post):
 		elif hook_type == 'issue_comment':
 			user		= post['comment']['user']['login']
 			number		= post['issue']['number']
-			title		= post['issue']['title']
+			title		= ' '.join(post['issue']['title'].split())[:50]
 			repo 		= post['repository']['full_name']
 			url			= post['comment']['html_url']
 			# get the repository
@@ -86,7 +86,7 @@ def resp(repo, text):
 	# find the repository object first
 
 	for channel in channels:
-		split = channel.split('/')
+		split = channel.split(' ')
 		network = split[0]
 		channel = split[1]
 

@@ -25,8 +25,8 @@ class Startup(object):
 		# if validate passes then proceed
 
 	def validate_config(self, repos, clients):
-		if os.environ.get('GITHUB_USER') == None or os.environ.get('GITHUB_PASS') == None:
-			print 'the enrivoment variables GITHUB_USER and GITHUB_PASS are not set'
+		if os.environ.get('GITHUB_TOKEN') == None:
+			print 'the enrivoment variable GITHUB_TOKEN is not set'
 			os.kill(os.getpid(), signal.SIGTERM)
 		# we need a github username and password, this needs to be in the enviroment vars, not settings
 
@@ -70,7 +70,7 @@ class Startup(object):
 		return not self.failed
 
 	def proceed(self, repos, clients):
-		self.authenticate(os.environ['GITHUB_USER'], os.environ['GITHUB_PASS'])
+		self.authenticate(os.environ['GITHUB_TOKEN'])
 		# authenticate
 
 		for repo in repos:
@@ -86,8 +86,8 @@ class Startup(object):
 			key = key + 1
 		# loop through the clients and set them up
 
-	def authenticate(self, user, password):
-		self.gh = login(user, password)
+	def authenticate(self, password):
+		self.gh = login(token=password)
 
 	def setup_hook(self, repo):
 		url = repo['url']
