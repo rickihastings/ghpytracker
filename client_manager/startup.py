@@ -17,6 +17,7 @@ class Startup(object):
 	bots = {}
 	gh = {}
 	failed = False
+	Repositories = {}
 
 	def __init__(self):
 		if self.validate_config(settings.REPOS, settings.CLIENTS):
@@ -96,6 +97,7 @@ class Startup(object):
 		event_hooks = []
 
 		Repository = self.gh.repository(owner, name)
+		self.Repositories[repo['repo']] = Repository
 		# get the repository info
 
 		for hook in Repository.iter_hooks():
@@ -109,5 +111,5 @@ class Startup(object):
 		}, repo['events'], True)
 
 	def fork(self, bots, key):
-		bots[key]['client'] = ircbot.IRCBot(bots[key]['info'])
+		bots[key]['client'] = ircbot.IRCBot(bots[key]['info'], self)
 		bots[key]['client'].start()
