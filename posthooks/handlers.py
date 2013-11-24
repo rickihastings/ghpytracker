@@ -25,7 +25,7 @@ def incoming(hook_type, post):
 			for commit in post['commits']:
 				commit_id	= commit['id'][:7]
 				author		= commit['author']['username']
-				message		= ' '.join(commit['message'].split())[:50]
+				message		= ' '.join(commit['message'].split())[:100]
 				url			= commit['url']
 
 				resp(repo, message_reponses['commit'] % (commit_id, author, repo, message, url))
@@ -45,7 +45,7 @@ def incoming(hook_type, post):
 			action		= post['action']
 			number		= post['issue']['number']
 			repo 		= post['repository']['full_name']
-			title		= ' '.join(post['issue']['title'].split())[:50]
+			title		= ' '.join(post['issue']['title'].split())[:100]
 			url			= post['issue']['html_url']
 			# get the repository
 
@@ -54,7 +54,7 @@ def incoming(hook_type, post):
 		elif hook_type == 'issue_comment':
 			user		= post['comment']['user']['login']
 			number		= post['issue']['number']
-			title		= ' '.join(post['issue']['title'].split())[:50]
+			title		= ' '.join(post['issue']['title'].split())[:100]
 			repo 		= post['repository']['full_name']
 			url			= post['comment']['html_url']
 			# get the repository
